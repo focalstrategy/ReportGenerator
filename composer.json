@@ -1,0 +1,19 @@
+{
+    "name": "focalstrategy/report_generator",
+    "description": "Library for building reports rapidly",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Shane Glee",
+            "email": "shane@focalstrategy.com"
+        }
+    ],
+    "require": {
+    	"nesbot/carbon": "1.*"
+    },
+    "autoload": {
+        "psr-4": {
+          "FocalStrategy\\ReportGenerator\\": "src"
+        }
+    },
+}
