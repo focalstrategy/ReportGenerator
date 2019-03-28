@@ -4,7 +4,7 @@
 
 <div class="card">
     <h5 class="card-header">
-        {{ $title }}
+        {{ $title ?? 'No Title' }}
     </h5>
     <div class="table-responsive">
         <table data-pageLength="{{ isset($page_length) ? $page_length : 25 }}" class="table table-bordered table-hover datatable {{ isset($checkbox_select) ? 'checkbox_select' : '' }}">
