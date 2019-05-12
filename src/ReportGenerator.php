@@ -6,15 +6,12 @@ use App;
 use Factory;
 use FocalStrategy\Actions\Core\ActionRenderType;
 use FocalStrategy\Core\ValueInterface;
-use FocalStrategy\DateRange\DateRange;
-use FocalStrategy\Filter\FilterManager;
 use FocalStrategy\ReportGenerator\Aggregates\AggregationRow;
 use FocalStrategy\ReportGenerator\Aggregates\SumAggregation;
 use FocalStrategy\ReportGenerator\DataProviders\DataProvider;
 use FocalStrategy\ReportGenerator\Formatters\Formatter;
 use FocalStrategy\ReportGenerator\ReportType;
 use FocalStrategy\ReportGenerator\Values\Value;
-use FocalStrategy\ViewObjects\ViewObject;
 use Illuminate\Support\Collection;
 
 class ReportGenerator
