@@ -3,26 +3,23 @@
 namespace FocalStrategy\ReportGenerator;
 
 use App;
+use Factory;
 use FocalStrategy\Actions\Core\ActionRenderType;
+use FocalStrategy\Core\ValueInterface;
 use FocalStrategy\DateRange\DateRange;
 use FocalStrategy\Filter\FilterManager;
-use FocalStrategy\ViewObjects\Transformer;
-use FocalStrategy\ViewObjects\ViewObject;
 use FocalStrategy\ReportGenerator\Aggregates\AggregationRow;
 use FocalStrategy\ReportGenerator\Aggregates\SumAggregation;
+use FocalStrategy\ReportGenerator\DataProviders\DataProvider;
 use FocalStrategy\ReportGenerator\Formatters\Formatter;
 use FocalStrategy\ReportGenerator\ReportType;
 use FocalStrategy\ReportGenerator\Values\Value;
-use FocalStrategy\Core\ValueInterface;
-use Factory;
+use FocalStrategy\ViewObjects\ViewObject;
 use Illuminate\Support\Collection;
 
 class ReportGenerator
 {
-    protected $view_object_class_name;
-    protected $view_factory_method;
-
-    protected $provided_factory;
+    protected $provider;
 
     protected $filter;
     protected $range;
@@ -32,7 +29,7 @@ class ReportGenerator
 
     protected $fields = [];
     protected $aggregates = [];
-    protected $additional_data = [];
+
     protected $settings = [
         'aggregate'=> true,
         'id_name'=> 'NO',
@@ -40,26 +37,9 @@ class ReportGenerator
 
     protected $actions = [];
 
-    public function __construct(string $view_object_class_name = null, string $view_factory_method = 'get')
+    public function __construct(DataProvider $provider)
     {
-        $this->view_object_class_name = $view_object_class_name;
-        $this->view_factory_method = $view_factory_method;
-        $this->transformer = App::make(Transformer::class);
-    }
-
-    public function setProvidedFactory($factory)
-    {
-        $this->provided_factory = $factory;
-    }
-
-    public function setFilterManager(FilterManager $filter)
-    {
-        $this->filter = $filter;
-    }
-
-    public function setDateRange(DateRange $range)
-    {
-        $this->range = $range;
+        $this->provider = $provider;
     }
 
     public function setAsync(bool $async, string $async_route)
@@ -76,11 +56,6 @@ class ReportGenerator
     public function settings(array $settings)
     {
         $this->settings = array_merge($this->settings, $settings);
-    }
-
-    public function with($field, $value)
-    {
-        $this->additional_data[$field] = $value;
     }
 
     public function col(string $display_name, string $field_name)
@@ -125,8 +100,8 @@ class ReportGenerator
             ];
         }
 
-        $factory = $this->getFactory();
-        $results = $factory->{$this->view_factory_method}($this->filter, $this->range);
+        $provider = $this->getDataProvider();
+        $results = $provider->get();
 
         if ($results === null) {
             return [];
@@ -147,7 +122,7 @@ class ReportGenerator
             }
         }
 
-        $totals = $this->getTotals($results, ReportType::HTML(), $factory);
+        $totals = $this->getTotals($results, ReportType::HTML(), $provider);
         $results = $this->format($results, ReportType::HTML());
 
         return [
@@ -155,7 +130,7 @@ class ReportGenerator
             'data' => $results,
             'aggregate' => $totals,
             // debug
-            'view_object_class_name' => $this->view_object_class_name
+            'provider' => get_class($this->provider)
         ];
     }
 
@@ -181,22 +156,11 @@ class ReportGenerator
             }
         }
 
-        if (isset($data['search']) && isset($data['search']['value'])) {
-            if (!$this->filter->has('search_term')) {
-                $this->filter->addValue('search_term', $data['search']['value']);
-            }
-        }
-
-        $factory = $this->getFactory();
-
-        $method = 'paged';
-
-        $results = $factory->{$method}(
+        $provider = $this->getDataProvider();
+        $results = $provider->getPaged(
             $data['start'],
             $data['length'],
-            $ordering,
-            $this->filter,
-            $this->range
+            $ordering
         );
 
         foreach ($results as $row) {
@@ -265,7 +229,7 @@ class ReportGenerator
             $process[] = $r;
         }
 
-        $total = $factory->count($this->filter, $this->range);
+        $total = $provider->getTotal();
 
         $response['data'] = $process;
         $response['recordsTotal'] = $total;
@@ -322,7 +286,7 @@ class ReportGenerator
         return $results;
     }
 
-    private function getTotals(Collection $results, ReportType $type, $factory) : array
+    private function getTotals(Collection $results, ReportType $type, $provider) : array
     {
         $totals = [];
 
@@ -334,7 +298,7 @@ class ReportGenerator
 
             foreach ($aggregates as $ag) {
                 if ($ag instanceof FactoryRequired) {
-                    $ag->setFactory($factory);
+                    $ag->setFactory($provider);
                 }
                 $totals[] = $ag->generate($this->fields, $results, $type);
             }
@@ -344,9 +308,7 @@ class ReportGenerator
 
     public function toArray()
     {
-        $results = $this->getFactory();
-        $results = $results->{$this->view_factory_method}($this->filter, $this->range);
-
+        $results = $this->getDataProvider()->get();
         $results = $this->format($results, ReportType::PLAIN());
 
         $flat = [];
@@ -373,21 +335,8 @@ class ReportGenerator
         return $this->settings[$key];
     }
 
-    public function getFactory()
+    public function getDataProvider()
     {
-        $factory = null;
-        if ($this->provided_factory) {
-            $factory = $this->provided_factory;
-        } else {
-            $class = $this->view_object_class_name;
-            $factory = $class::getFactory();
-            $factory = App::make($factory);
-        }
-
-        if (method_exists($factory, 'setAdditionalData')) {
-            $factory->setAdditionalData($this->additional_data);
-        }
-
-        return $factory;
+        return $this->provider;
     }
 }

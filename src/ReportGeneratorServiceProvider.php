@@ -27,5 +27,9 @@ class ReportGeneratorServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/resources/views' => resource_path('views/vendor/report_generator'),
         ]);
+
+        $this->publishes([
+            __DIR__.'/public' => public_path('vendor/focalstrategy/report_generator'),
+        ], 'public');
     }
 }

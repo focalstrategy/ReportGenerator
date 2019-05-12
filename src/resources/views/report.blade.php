@@ -1,11 +1,14 @@
-@if (isset($view_object_class_name) && config('app.debug'))
-<!-- Report Generator: VO = {{ $view_object_class_name }} -->
+@if (isset($provider) && config('app.debug'))
+<!-- Report Generator: VO = {{ $provider }} -->
 @endif
 
 <div class="card">
     <h5 class="card-header">
         {{ $title ?? 'No Title' }}
     </h5>
+    @if(isset($prefix))
+        {!! $prefix !!}
+    @endif
     <div class="table-responsive">
         <table data-pageLength="{{ isset($page_length) ? $page_length : 25 }}" class="table table-bordered table-hover datatable {{ isset($checkbox_select) ? 'checkbox_select' : '' }}">
             <thead>

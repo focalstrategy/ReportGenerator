@@ -1,7 +1,10 @@
 <div class="card">
     <h5 class="card-header">
-        {{ $title }}
+        {{ $title ?? 'No Title' }}
     </h5>
+    @if(isset($prefix))
+        {!! $prefix !!}
+    @endif
 	<table class="table async_table" data-route="{{ $async_route }}">
 		<thead>
 			<tr>
