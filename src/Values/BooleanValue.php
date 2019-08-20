@@ -28,9 +28,9 @@ class BooleanValue extends Value
     public function render() : string
     {
         if ($this->colour) {
-            return  '<span class="colour_ticks_crosses">' . tertiaryToTickCross($this->value()) . '<span>';
+            return  '<span class="colour_ticks_crosses">' . $this->tertiaryToTickCross($this->value()) . '<span>';
         }
-        return tertiaryToTickCross($this->value());
+        return $this->tertiaryToTickCross($this->value());
     }
 
     public function getAttributes() : array
@@ -62,5 +62,17 @@ class BooleanValue extends Value
     {
         $this->default_sort = $default_sort;
         return $this;
+    }
+
+       private function tertiaryToTickCross($bool)
+    {
+        if ($bool === true) {
+        return '<span class="fa fa-check"></span>';
+    }
+    if ($bool === false) {
+        return '<span class="fa fa-times"></span>';
+    }
+
+    return '<span class="fa fa-question"></span>';
     }
 }
