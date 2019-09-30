@@ -9,7 +9,6 @@
         }
     ],
     "require": {
-    	"nesbot/carbon": "1.*",
         "focalstrategy/core":"^1.0",
         "focalstrategy/view_objects":"^1.0.1",
         "focalstrategy/date-range":"^1.0",
