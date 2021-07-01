@@ -3,9 +3,9 @@
 namespace FocalStrategy\ReportGenerator\Values;
 
 use Carbon\Carbon;
-use App\Berry\Helpers\Helpers\ValueCategorizer;
-use FocalStrategy\ReportGenerator\ReportType;
 use FocalStrategy\Core\ValueInterface;
+use FocalStrategy\ReportGenerator\ReportType;
+use App\Berry\Helpers\Helpers\ValueCategorizer;
 
 class DateValue implements ValueInterface
 {
@@ -43,12 +43,8 @@ class DateValue implements ValueInterface
 
     public function getAttributes() : array
     {
-        if (!$this->value) {
-            return [];
-        }
-
         return [
-            'data-sort' => $this->value->format('U'),
+            'data-sort' => $this->value ? $this->value->format('U') : 0,
             'class' => implode(' ', $this->getClasses())
         ];
     }
